@@ -9,7 +9,7 @@
 #
 # Commands:
 #   hubot halp _[query]_ - `help` (_alias_)
-#   test - `roger, testing...` (_alias_)
+#   test - test system (_alias_)
 #   hubot rain - `animate make it rain` (_alias_)
 #   hubot tell <user> <message> - pass <user> a message (_alias_)
 #
