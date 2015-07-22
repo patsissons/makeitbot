@@ -8,8 +8,8 @@
 #   none
 #
 # Commands:
-#   hubot halp - `help` (_alias_)
-#   hubot test - `echo roger, testing...` (_alias_)
+#   hubot halp _[query]_ - `help` (_alias_)
+#   test - `roger, testing...` (_alias_)
 #   hubot rain - `animate make it rain` (_alias_)
 #
 # Notes:
@@ -20,11 +20,18 @@
 
 TextMessage = require('hubot').TextMessage
 
-alias = (robot, alias, command) ->
-  robot.respond new RegExp(alias, 'i'), (msg) ->
-    robot.receive new TextMessage(msg.message.user, "#{robot.name} #{command}")
+respondTo = (robot, regex, action) ->
+  robot.respond regex, (msg) ->
+    action(msg)
+
+hearAbout = (robot, regex, action) ->
+  robot.hear regex, (msg) ->
+    action(msg)
+
+forwardTo = (robot, msg, text) ->
+  robot.receive new TextMessage(msg.message.user, "#{robot.name} #{text}")
 
 module.exports = (robot) ->
-  alias(robot, 'halp', 'help')
-  alias(robot, 'test', 'echo roger, testing...')
-  alias(robot, 'rain', 'animate make it rain')
+  respondTo(robot, /halp(.*)/i, (msg) -> forwardTo(robot, msg, "help#{msg.match[1]}"))
+  hearAbout(robot, /^test$/i, (msg) -> msg.reply 'Roger, testing...'; msg.send 'All systems nominal!')
+  respondTo(robot, /rain$/i, (msg) -> forwardTo(robot, msg, 'animate make it rain'))
