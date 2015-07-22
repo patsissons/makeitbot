@@ -20,18 +20,10 @@
 
 TextMessage = require('hubot').TextMessage
 
-respondTo = (robot, regex, action) ->
-  robot.respond regex, (msg) ->
-    action(msg)
-
-hearAbout = (robot, regex, action) ->
-  robot.hear regex, (msg) ->
-    action(msg)
-
-forwardTo = (robot, msg, text) ->
+aliasTo = (robot, msg, text) ->
   robot.receive new TextMessage(msg.message.user, "#{robot.name} #{text}")
 
 module.exports = (robot) ->
-  respondTo(robot, /halp(.*)/i, (msg) -> forwardTo(robot, msg, "help#{msg.match[1]}"))
-  hearAbout(robot, /^test$/i, (msg) -> msg.reply 'Roger, testing...'; msg.send 'All systems nominal!')
-  respondTo(robot, /rain$/i, (msg) -> forwardTo(robot, msg, 'animate make it rain'))
+  robot.respond /halp(.*)/i, (msg) -> aliasTo robot, msg, "help#{msg.match[1]}"
+  robot.hear /^test$/i, (msg) -> msg.reply 'Roger, testing...'; msg.send 'All systems nominal!'
+  robot.respond /rain$/i, (msg) -> aliasTo robot, msg, 'animate make it rain'
