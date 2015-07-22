@@ -20,9 +20,6 @@
 
 TextMessage = require('hubot').TextMessage
 
-alias = (robot, msg, command) ->
-  robot.receive new TextMessage(msg.message.user, "#{robot.name} #{command}")
-
 alias = (robot, alias, command) ->
   robot.respond new RegExp(alias, 'i'), (msg) ->
     robot.receive new TextMessage(msg.message.user, "#{robot.name} #{command}")
