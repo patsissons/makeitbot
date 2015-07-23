@@ -19,4 +19,4 @@
 
 module.exports = (robot) ->
   robot.hear /^test$/i, (msg) -> msg.reply 'Roger, testing...'; msg.send 'All systems nominal!'
-  robot.respond /tell (.+) (.+)/i, (msg) -> msg.send "#{msg.match[1]}: #{msg.match[2]}"
+  robot.respond /tell ([^ ]+) (.+)/i, (msg) -> robot.messageRoom { room: msg.match[1] }, msg.match[2]
