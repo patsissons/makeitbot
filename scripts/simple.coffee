@@ -8,8 +8,8 @@
 #   none
 #
 # Commands:
-#   test - test system (_alias_)
-#   hubot tell <user> <message> - pass <user> a message (_alias_)
+#   test - test system
+#   hubot tell <user> <message> - pass <user> a message
 #
 # Notes:
 #   Remember to add any commands you create to the commands section above.

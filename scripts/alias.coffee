@@ -9,9 +9,7 @@
 #
 # Commands:
 #   hubot halp _[query]_ - `help` (_alias_)
-#   test - test system (_alias_)
 #   hubot rain - `animate make it rain` (_alias_)
-#   hubot tell <user> <message> - pass <user> a message (_alias_)
 #
 # Notes:
 #   Remember to add any aliases you create to the commands section above.
