@@ -4,4 +4,5 @@
 module.exports = (robot) ->
   robot.on 'error', (error) -> console.log(error)
 
-  robot.messageRoom 'general', "#{robot.name} service connected"
+  statusChannel = robot.adapter.client.getChannelGroupOrDMByName "#{robot.name}-status"
+  robot.messageRoom "#{statusChannel.name}", "service connected" if statusChannel
