@@ -25,3 +25,4 @@ aliasTo = (robot, msg, text) ->
 module.exports = (robot) ->
   robot.respond /halp(.*)/i, (msg) -> aliasTo robot, msg, "help#{msg.match[1]}"
   robot.respond /rain$/i, (msg) -> aliasTo robot, msg, 'animate make it rain'
+  robot.respond /\??\s*$/, (msg) -> aliasTo robot, msg, 'help'
