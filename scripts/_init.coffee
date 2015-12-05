@@ -3,7 +3,7 @@
 
 module.exports = (robot) ->
   # log errors to the console
-  robot.on 'error', (error) -> console.log(error)
+  robot.on 'error', (error) -> console.log("ERROR: #{error}")
 
   if (robot.adapter.client && robot.adapter.client.getChannelGroupOrDMByName)
     # get the status channel for this bot (if it exists)
