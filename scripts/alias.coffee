@@ -1,5 +1,13 @@
 # Description:
-#   allows making easy alias commands
+#   define new alias commands on the fly
+#
+#   This script is largely based off the work of the responder script
+#   https://github.com/github/hubot-scripts/blob/master/src/scripts/responders.coffee
+#   There are a few minor differences, namely that this script does not use
+#   eval to process input, and instead simply uses regex replacements.
+#   Additionally, this script does not push new listeners and instead manages
+#   and matches its list of aliases internally (this simplifies the alias
+#   removal process a bit).
 #
 # Dependencies:
 #   none
@@ -8,21 +16,107 @@
 #   none
 #
 # Commands:
-#   hubot halp _[query]_ - `help` (_alias_)
-#   hubot rain - `animate make it rain` (_alias_)
+#   hubot aliases - List all aliases
+#   hubot alias /pattern/ [to] alias - Create a new alias
+#   hubot alias /pattern/ - Display alias for pattern
+#   hubot alias remove /pattern/ - Remove an alias
 #
 # Notes:
-#   Remember to add any aliases you create to the commands section above.
+# Your alias may contain replacement placeholders
+# i.e., hubot alias /^something (.+)/ to say something $1 is aliased
+#       'hubot something fun' would result in 'hubot say something fun is aliased'
 #
 # Author:
 #   pjs
 
-TextMessage = require('hubot').TextMessage
+class Aliases
+  TextMessage = require('hubot').TextMessage
 
-aliasTo = (robot, msg, text) ->
-  robot.receive new TextMessage(msg.message.user, "#{robot.name} #{text}")
+  constructor: (@robot) ->
+    @robot.brain.data.aliases = {}
+    @robot.brain.on 'loaded', (data) =>
+      for pattern, alias of data.aliases
+        @add(pattern, alias.text)
+
+  aliases: ->
+    @robot.brain.data.aliases
+
+  alias: (pattern) ->
+    @aliases()[pattern]
+
+  remove: (pattern) ->
+    alias = @alias(pattern)
+    if alias
+      delete @aliases()[pattern]
+    alias
+
+  add: (pattern, text) ->
+    try
+      regex = new RegExp("^#{pattern}", 'i')
+    catch error
+      regex = null
+
+    if regex instanceof RegExp
+      @remove(pattern)
+      @aliases()[pattern] = {
+        text: text,
+      }
+      @alias(pattern)
+
+  respond: (robot, res) ->
+    text = res.match[1]
+
+    for pattern, alias of @aliases()
+      regex = new RegExp("^#{pattern}", 'i')
+
+      if match = text.match regex
+        alias_text = text.replace regex, alias.text
+        msg = new TextMessage(res.message.user, "#{robot.name} #{alias_text}")
+        # this allows us to avoid responding to our own messages (and infinite loops)
+        msg.alias = true
+        robot.receive msg
 
 module.exports = (robot) ->
-  robot.respond /halp(.*)/i, (msg) -> aliasTo robot, msg, "help#{msg.match[1]}"
-  robot.respond /rain$/i, (msg) -> aliasTo robot, msg, 'animate make it rain'
-  robot.respond /\??\s*$/, (msg) -> aliasTo robot, msg, 'help'
+  aliases = new Aliases(robot)
+
+  robot.respond /aliases$/i, (res) ->
+    patterns = Object.keys(aliases.aliases()).sort()
+    if patterns.length
+      response = "#{patterns.length} Defined Aliases:\r\n"
+      for pattern, i in patterns
+        response += "[#{i}] /#{pattern}/ -> #{aliases.alias(pattern).text}\r\n"
+      res.send(response.trim())
+    else
+      res.send('No Aliases Yet')
+
+  robot.respond /alias \/(.+)\/ (to )?(.+)/i, (res) ->
+    pattern = res.match[1]
+    text = res.match[3]
+    alias = aliases.add(pattern, text)
+
+    if alias
+      res.send("Aliasing /#{pattern}/ to #{text}")
+    else
+      res.send("Error Aliasing /#{pattern}/")
+
+  robot.respond /alias \/(.+)\/$/i, (res) ->
+    pattern = res.match[1]
+    alias = aliases.alias(pattern)
+
+    if alias
+      res.send("Alias for /#{pattern}/ -> #{alias.text}")
+    else
+      res.send("No Alias for /#{pattern}/")
+
+  robot.respond /alias remove \/(.+)\/$/i, (res) ->
+    pattern = res.match[1]
+    alias = aliases.remove(pattern)
+
+    if alias
+      res.send("Alias for /#{pattern}/ removed")
+    else
+      res.send("No Alias for /#{pattern}/")
+
+  robot.respond /(.*)/, (res) ->
+    if (res.message.alias || false) == false
+      aliases.respond(robot, res)
