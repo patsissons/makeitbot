@@ -9,6 +9,7 @@
 #
 # Commands:
 #   test(ing) - test system
+#   hubot say <message> - repeat message
 #   hubot tell <user|room> <message> - send user or room a message from hubot
 #
 # Notes:
