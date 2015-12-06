@@ -26,6 +26,13 @@
 # i.e., hubot alias /^something (.+)/ to say something $1 is aliased
 #       'hubot something fun' would result in 'hubot say something fun is aliased'
 #
+#   Every alias can be bound to one or more commands, separate commands with a
+#   new line.
+#   i.e., hubot alias /spam (.+)/ to
+#         say hi $1
+#         say how is it going $1
+#         say am I annoying yet $1?
+#
 # Author:
 #   pjs
 
@@ -71,10 +78,14 @@ class Aliases
 
       if match = text.match regex
         alias_text = text.replace regex, alias.text
-        msg = new TextMessage(res.message.user, "#{robot.name} #{alias_text}")
-        # this allows us to avoid responding to our own messages (and infinite loops)
-        msg.alias = true
-        robot.receive msg
+        lines = alias_text.split(/\r?\n/)
+        for line in lines
+          line = line.trim()
+          if line
+            msg = new TextMessage(res.message.user, "#{robot.name} #{line}")
+            # this allows us to avoid responding to our own messages (and infinite loops)
+            msg.alias = true
+            robot.receive msg
 
 module.exports = (robot) ->
   aliases = new Aliases(robot)
@@ -89,7 +100,7 @@ module.exports = (robot) ->
     else
       res.send('No Aliases Yet')
 
-  robot.respond /alias \/(.+)\/ (to )?(.+)/i, (res) ->
+  robot.respond /alias \/(.+)\/( to)?([\s\S]+)/i, (res) ->
     pattern = res.match[1]
     text = res.match[3]
     alias = aliases.add(pattern, text)
