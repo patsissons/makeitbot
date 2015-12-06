@@ -22,8 +22,8 @@
 #   hubot alias remove /pattern/ - Remove an alias
 #
 # Notes:
-# Your alias may contain replacement placeholders
-# i.e., hubot alias /^something (.+)/ to say something $1 is aliased
+#   Your alias may contain replacement placeholders
+#   i.e., hubot alias /something (.+)/ to say something $1 is aliased
 #       'hubot something fun' would result in 'hubot say something fun is aliased'
 #
 #   Every alias can be bound to one or more commands, separate commands with a
