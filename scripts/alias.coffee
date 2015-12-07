@@ -94,10 +94,10 @@ module.exports = (robot) ->
   robot.respond /aliases$/i, (res) ->
     patterns = Object.keys(aliases.aliases()).sort()
     if patterns.length
-      response = "#{patterns.length} Defined Aliases:\r\n"
+      result = "#{patterns.length} Defined Aliases:\r\n"
       for pattern, i in patterns
-        response += "[#{i}] /#{pattern}/ -> #{aliases.alias(pattern).text}\r\n"
-      res.send(response.trim())
+        result += "[#{i}] /#{pattern}/ -> #{aliases.alias(pattern).text}\r\n"
+      res.send(result.trim())
     else
       res.send('No Aliases Yet')
 
