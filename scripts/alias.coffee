@@ -61,6 +61,7 @@ class Aliases
     try
       regex = new RegExp("^#{pattern}", 'i')
     catch error
+      console.log("Error: #{error}")
       regex = null
 
     if regex instanceof RegExp
