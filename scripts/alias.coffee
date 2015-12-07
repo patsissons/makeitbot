@@ -78,7 +78,10 @@ class Aliases
       regex = new RegExp("^#{pattern}", 'i')
 
       if match = text.match regex
-        alias_text = text.replace regex, alias.text
+        if match.length > 1
+          alias_text = text.replace regex, alias.text
+        else
+          alias_text = alias.text
         lines = alias_text.trim().split(/\r?\n/)
         for line in lines
           line = line.trim()
