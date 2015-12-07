@@ -79,7 +79,7 @@ class Aliases
 
       if match = text.match regex
         alias_text = text.replace regex, alias.text
-        lines = alias_text.split(/\r?\n/)
+        lines = alias_text.trim().split(/\r?\n/)
         for line in lines
           line = line.trim()
           if line
