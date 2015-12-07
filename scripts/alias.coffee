@@ -41,9 +41,6 @@ class Aliases
 
   constructor: (@robot) ->
     @robot.brain.data.aliases = {}
-    @robot.brain.on 'loaded', (data) =>
-      for pattern, alias of data.aliases
-        @add(pattern, alias.text)
 
   aliases: ->
     @robot.brain.data.aliases
