@@ -10,10 +10,11 @@
 #   none
 #
 # Commands:
-#   hubot respond to /pattern/ [by @sender] with response
+#   hubot respond to /pattern/ [by @sender] with response [in #room]
+#   hubot respond remove /pattern/ [index] [in #room]
+#   hubot responses [in #room]
 #
 # Notes:
-#   @sender is currently not supported
 #
 # Author:
 #   pjs
@@ -21,26 +22,68 @@
 class Responses
   constructor: (@robot) ->
     @robot.brain.data.responses = {}
-
-  responses: ->
-    @robot.brain.data.responses
-
-  responseList: (pattern) ->
-    @responses()[pattern]
-
-  remove: (pattern, index) ->
-    responseList = @responseList(pattern)
-    if responseList && index
-      if index == 'ALL' || responseList.length < 2
-        responseList = []
-        delete @responses()[pattern]
-      else if typeof index == 'number'
-        responseList.splice(index, 1)
-      else
-        responseList = null
+    @robot.brain.data.rooms = {}
+    
+  getRooms: ->
+    @robot.brain.data.roooms
+  
+  getResponseList: (room, create) ->
+    responseList = null
+    
+    if room
+      roomData = @robot.brain.data.rooms[room]
+      if roomData
+        responseList = roomData.responses
+      else if create
+        roomData = @robot.brain.data.rooms[room] = { responses: {} }
+        responseList = roomData.responses
+    else
+      responseList = @robot.brain.data.responses
+      
     responseList
+    
+  getPatternResponseList: (pattern, room, create) ->
+    patternResponseList = null
+    responseList = @getResponseList(room, create)
+    
+    if responseList
+      patternResponseList = responseList[pattern]
+      if !patternResponseList && create
+        patternResponseList = responseList[pattern] = []
+    
+    patternResponseList
+    
+  getResponse: (text, room) ->
+    response = null
+    
+    for pattern, patternResponseList of @getResponseList(room)
+      regex = new RegExp("#{pattern}", 'i')
 
-  add: (pattern, text, sender) ->
+      if match = text.match regex
+        responseItem = res.random patternResponseList
+        
+        if match.length > 1
+          response = text.replace(regex, response.text)
+        else
+          response = response.text
+        
+        break
+    
+    response
+  
+  remove: (pattern, index, room) ->
+    responses = @getPatternResponses(pattern, room)
+    
+    if responses
+      if typeof index == 'number'
+        responses.splice(index, 1)
+      else
+        responses = null
+    
+      if !responses || responses.length == 0
+        delete @getResponses(room)[pattern]
+
+  add: (pattern, text, sender, room) ->
     try
       regex = new RegExp("^#{pattern}", 'i')
     catch error
@@ -48,48 +91,85 @@ class Responses
       regex = null
 
     if regex instanceof RegExp
-      responseList = @responseList(pattern)
-      if !responseList
-        responseList = []
+      responses = @getPatternResponses(pattern, room, true)
 
-      responseList.push {
+      responses.push {
         text,
         sender
       }
-      @responses()[pattern] = responseList
-      responseList
+    #   @getResponses(room)[pattern] = responses
+      responses
 
   respond: (robot, res) ->
     text = res.match[1]
-
-    for pattern, responseList of @responses()
-      regex = new RegExp("#{pattern}", 'i')
-
-      if match = text.match regex
-        response = res.random responseList
-        if match.length > 1
-          response_text = text.replace(regex, response.text)
-        else
-          response_text = response.text
-        lines = response_text.trim().split(/\r?\n/)
-        for line in lines
-          line = line.trim()
-          if line
+    room = res.envelope.room
+    
+    response = @getResponse(text, room)
+    
+    if !response
+      response = @getResponse(text)
+      
+    if response
+      lines = response_text.trim().split(/\r?\n/)
+      for line in lines
+        line = line.trim()
+        if line
             res.send line
 
 module.exports = (robot) ->
   responses = new Responses(robot)
+  
+  getPatternResponses: (pattern, patternResponseList) ->
+    patternResponse = { 
+      pattern, 
+      text: "/#{pattern}/ has #{patternResponseList.length} Responses", 
+      responses: [] 
+    }
+    
+    for response, i in patternResponseList
+      patternResponse.responses.push "[#{i}] #{response.text}"
+      
+    patternResponse
+  
+  getResponses: (responseList) ->
+    responses = []
+    patterns = Object.keys(responses.responses()).sort()
+    
+    for pattern in patterns
+      patternResponseList = responseList[pattern]
+      
+      responses.push @getPatternResponses(pattern, patternResponseList)
+    
+    responses
 
   robot.respond /responses$/i, (res) ->
-    patterns = Object.keys(responses.responses()).sort()
-    if patterns.length
-      result = "#{patterns.length} Defined Responses:\r\n"
-      for pattern, i in patterns
-        responseList = responses.responseList(pattern)
-        result += "[#{i}] /#{pattern}/ has #{responseList.length} Options\r\n"
-        for response, j in responseList
-          result += "[#{i}][#{j}] #{response.text}\r\n"
-      res.send(result.trim())
+    responses = []
+    globalResponses = @getResponses(@responses.getResponseList())
+    
+    if globalResponses.length
+      responses.push {
+        room: null,
+        responses: globalResponses
+      }
+    
+    rooms = Object.keys(@responses.getRooms()).sort()
+    for room in rooms
+      roomResponses = @getResponses(@responses.getResponseList(room))
+      responses.push {
+        room,
+        responses: roomResponses
+      }
+      
+    text = []
+    for roomResponse in responses
+      text.push "#{roomResponse.responses.length} #{roomResponse.room ? '#' : ''}#{roomResponse.room ? roomResponse.room : 'global'} Responses"
+      for patternResponse in roomResponse.responses
+        text.push "  #{patternResponse.text}"
+        for response in patternResponse.responses
+          text.push "    #{response}"
+    
+    if text.length
+      res.send(text.join(', ').trim())
     else
       res.send('No Responses Yet')
 
@@ -98,9 +178,9 @@ module.exports = (robot) ->
     text = res.match[2]
 
     res.message.responder = true
-    responseList = responses.add(pattern, text)
+    responses = @responses.add(pattern, text)
 
-    if responseList
+    if responses
       res.send("Responding to /#{pattern}/ with #{text}")
     else
       res.send("Error Responding to /#{pattern}/")
@@ -109,13 +189,14 @@ module.exports = (robot) ->
     pattern = res.match[1]
 
     res.message.responder = true
-    responseList = responses.responseList(pattern)
+    patternResponseList = @responses.getPatternResponses(pattern)
+    patternResponses = @getPatternResponses(pattern, patternResponseList)
 
-    if responseList
-      result = "Response for /#{pattern}/ has #{responseList.length} Options\r\n"
-      for response, i in responseList
-        result += "[#{i}] #{response.text}\r\n"
-      res.send(result.trim())
+    if patternResponses.responses.length
+      text = [patternResponses.text]
+      for response in patternResponses.responses
+        text.push "  #{response}"
+      res.send(text.join(', ').trim())
     else
       res.send("No Responses for /#{pattern}/")
 
@@ -124,13 +205,13 @@ module.exports = (robot) ->
     index = res.match[3]
 
     res.message.responder = true
-    responseList = responses.remove(pattern, index)
+    responses = responses.remove(pattern, index)
 
-    if responseList
-      if index == 'ALL'
-        res.send("All Responses for /#{pattern}/ removed")
-      else
+    if responses
+      if index
         res.send("Response #{index} for /#{pattern}/ removed")
+      else
+        res.send("All Responses for /#{pattern}/ removed")
     else
       res.send("No Responses for /#{pattern}/")
 
