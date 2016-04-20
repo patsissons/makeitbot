@@ -23,5 +23,12 @@
   },
   "engines": {
     "node": "0.10.x"
+  },
+  "scripts": {
+    "start": "node --require dotenv/config ./node_modules/coffee-script/bin/coffee ./node_modules/hubot/bin/hubot --adapter slack",
+    "test": "node --require dotenv/config ./node_modules/coffee-script/bin/coffee ./node_modules/hubot/bin/hubot --adapter shell --name makeit"
+  },
+  "devDependencies": {
+    "dotenv": "^2.0.0"
   }
 }
