@@ -7,5 +7,6 @@
   "hubot-google-translate",
   "hubot-maps",
   "hubot-redis-brain",
-  "hubot-youtube"
+  "hubot-youtube",
+  "hubot-giphy-gifme"
 ]
