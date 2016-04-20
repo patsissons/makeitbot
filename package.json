@@ -23,5 +23,9 @@
   },
   "engines": {
     "node": "0.10.x"
+  },
+  "scripts": {
+    "start": "coffee ./node_modules/hubot/bin/hubot --adapter slack",
+    "test": "coffee ./node_modules/hubot/bin/hubot --adapter shell --name makeit"
   }
 }
