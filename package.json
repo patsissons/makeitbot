@@ -30,6 +30,10 @@
     "test": "node --require dotenv/config ./node_modules/coffee-script/bin/coffee ./node_modules/hubot/bin/hubot --adapter shell --name makeit"
   },
   "devDependencies": {
-    "dotenv": "^2.0.0"
+    "chai": "^3.5.0",
+    "dotenv": "^2.0.0",
+    "mocha": "^2.4.5",
+    "sinon": "^1.17.3",
+    "sinon-chai": "^2.8.0"
   }
 }
