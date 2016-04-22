@@ -24,6 +24,28 @@
 			"outDir": null
 		},
 		{
+			"name": "Test",
+			"type": "node",
+			"request": "launch",
+			"program": "${workspaceRoot}/node_modules/mocha/bin/mocha",
+			"stopOnEntry": true,
+			"args": [ "--compilers", "coffee:coffee-script", "--recursive", "--reporter", "spec", "${workspaceRoot}/test"],
+			"cwd": "${workspaceRoot}",
+			"preLaunchTask": null,
+			"runtimeExecutable": null,
+			"runtimeArgs": [
+				"--nolazy",
+				"--require", 
+				"dotenv/config"
+			],
+			"env": {
+				"NODE_ENV": "development"
+			},
+			"externalConsole": false,
+			"sourceMaps": false,
+			"outDir": null
+		},
+		{
 			"name": "Attach",
 			"type": "node",
 			"request": "attach",

@@ -29,6 +29,7 @@
     "connect": "node --require dotenv/config ./node_modules/coffee-script/bin/coffee ./node_modules/hubot/bin/hubot --adapter slack",
     "start": "node --require dotenv/config ./node_modules/coffee-script/bin/coffee ./node_modules/hubot/bin/hubot --adapter shell --name makeit",
     "test": "mocha --compilers coffee:coffee-script --recursive --reporter spec ./test",
+    "debug": "mocha --compilers coffee:coffee-script --recursive --reporter spec ./test --debug-brk",
     "watch": "mocha --compilers coffee:coffee-script --recursive --reporter spec ./test --watch"
   },
   "devDependencies": {
