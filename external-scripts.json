@@ -8,5 +8,5 @@
   "hubot-maps",
   "hubot-redis-brain",
   "hubot-youtube",
-  "hubot-giphy-gifme"
+  "hubot-giphy"
 ]
