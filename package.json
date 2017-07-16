@@ -22,9 +22,6 @@
     "hubot-slack": "^3.4.2",
     "hubot-youtube": "^1.0.2"
   },
-  "engines": {
-    "node": "0.10.x"
-  },
   "scripts": {
     "start": "node --require dotenv/config ./node_modules/coffee-script/bin/coffee ./node_modules/hubot/bin/hubot --adapter slack",
     "test": "node --require dotenv/config ./node_modules/coffee-script/bin/coffee ./node_modules/hubot/bin/hubot --adapter shell --name makeit"
